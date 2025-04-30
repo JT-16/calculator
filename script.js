@@ -14,182 +14,148 @@ const divisionEL = document.querySelector('.division');
 const equalEL = document.querySelector('.equal');
 
 const decimalEL = document.querySelector('.decimal');
-const number0EL = document.querySelector('.number-0');
-const number1EL = document.querySelector('.number-1');
-const number2EL = document.querySelector('.number-2');
-const number3EL = document.querySelector('.number-3');
-const number4EL = document.querySelector('.number-4');
-const number5EL = document.querySelector('.number-5');
-const number6EL = document.querySelector('.number-6');
-const number7EL = document.querySelector('.number-7');
-const number8EL = document.querySelector('.number-8');
-const number9EL = document.querySelector('.number-9');
-const numberELArray = [
-    number0EL, number1EL, number2EL, number3EL, number4EL, number5EL,
-    number6EL, number7EL, number8EL, number9EL
-];
+const numberELArray = Array.from({ length: 10 }, (_, i) =>
+    document.querySelector(`.number-${i}`)
+);
 
-
-// variables
-let displyStrInMemory = null;
+// Variables
+let displayStrInMemory = null;
 let operatorInMemory = null;
 
-
-// functions
-const getdisplayAsStr = () => {
-    const currentDisplayStr = displayEl.textContent;
-    return currentDisplayStr.split(',').join('');
+// Functions
+const getDisplayAsStr = () => {
+    return displayEl.textContent.replace(/,/g, '');
 };
 
-const setStrAsdisplay = (displayStr) => {
-    if (displayStr[displayStr.length - 1] === '.') {
-        displayEl.textContent += '.';
+const setStrAsDisplay = (displayStr) => {
+    if (displayStr.endsWith('.')) {
+        displayEl.textContent = displayStr;
         return;
     }
 
-
     const [wholeNumStr, decimalStr] = displayStr.split('.');
     if (decimalStr) {
-        displayEl.textContent = 
-        parseFloat(wholeNumStr).toLocaleString() + '.' + decimalStr;
+        displayEl.textContent = parseFloat(wholeNumStr).toLocaleString() + '.' + decimalStr;
     } else {
         displayEl.textContent = parseFloat(wholeNumStr).toLocaleString();
-    };
-    displayEl.textContent = parseFloat(wholeNumStr).toLocaleString();
-
+    }
 };
 
-const getdisplayAsNum = () => {
-    return parseFloat(getdisplayAsStr());
-}
+const getDisplayAsNum = () => {
+    return parseFloat(getDisplayAsStr());
+};
+
 const handleNumberClick = (numStr) => {
-    const currentDisplayStr = getdisplayAsStr();
-    if(currentDisplayStr === '0') {
-        displayEl.textContent = numStr;
-        setStrAsdisplay(numStr);
+    const currentDisplayStr = getDisplayAsStr();
+
+    if (currentDisplayStr === '0') {
+        setStrAsDisplay(numStr);
     } else {
-        setStrAsdisplay(currentDisplayStr + numStr);
-        displayEl.textContent =
-         parseFloat(currentDisplayStr + numStr).toLocaleString();
+        setStrAsDisplay(currentDisplayStr + numStr);
     }
 };
 
 const getResultOfOperationAsStr = () => {
-    let newdisplayNum;
-    if (operatorInMemory === 'addition') {
-        newdisplayNum = displayNumInMemory + currentdisplayNum;
-    } else if (operatorInMemory === 'subtraction') {
-        newdisplayNum = displayNumInMemory - currentdisplayNum;
-    }else if (operatorInMemory === 'multiplication') {
-        newdisplayNum = displayNumInMemory * currentdisplayNum;
-    } else if (operatorInMemory === 'division') {
-        newdisplayNum = displayNumInMemory / currentdisplayNum;
+    const currentDisplayNum = getDisplayAsNum();
+    const displayNumInMemory = parseFloat(displayStrInMemory);
+    let result;
+
+    switch (operatorInMemory) {
+        case 'addition':
+            result = displayNumInMemory + currentDisplayNum;
+            break;
+        case 'subtraction':
+            result = displayNumInMemory - currentDisplayNum;
+            break;
+        case 'multiplication':
+            result = displayNumInMemory * currentDisplayNum;
+            break;
+        case 'division':
+            result = displayNumInMemory / currentDisplayNum;
+            break;
+        default:
+            return '0';
     }
+
+    return result.toString();
 };
 
 const handleOperatorClick = (operation) => {
-    const currentDisplayStr = getdisplayAsStr();
-    const currentdisplayNum = getdisplayAsNum();
-    if (!displyStrInMemory) {
-        displyStrInMemory = currentDisplayStr;
+    const currentDisplayStr = getDisplayAsStr();
+
+    if (!displayStrInMemory) {
+        displayStrInMemory = currentDisplayStr;
         operatorInMemory = operation;
-        setStrAsdisplay('0');
-        return;
+        setStrAsDisplay('0');
+    } else {
+        const resultStr = getResultOfOperationAsStr();
+        displayStrInMemory = resultStr;
+        operatorInMemory = operation;
+        setStrAsDisplay('0');
     }
-
-    const displayNumInMemory = parseFloat(displyStrInMemory);
-    let newdisplayNum;
-    if (operatorInMemory === 'addition') {
-        newdisplayNum = displayNumInMemory + currentdisplayNum;
-    } else if (operatorInMemory === 'subtraction') {
-        newdisplayNum = displayNumInMemory - currentdisplayNum;
-    }else if (operatorInMemory === 'multiplication') {
-        newdisplayNum = displayNumInMemory * currentdisplayNum;
-    } else if (operatorInMemory === 'division') {
-        newdisplayNum = displayNumInMemory / currentdisplayNum;
-    }
-
-    displyStrInMemory  = newdisplayNum.toString();
-    operatorInMemory = operation;
-    setStrAsdisplay('0');
 };
 
-
-// Add Event Listeners to functions
+// Event Listeners
 acEL.addEventListener('click', () => {
-    setStrAsdisplay('0');
-    displyStrInMemory = null;
+    setStrAsDisplay('0');
+    displayStrInMemory = null;
     operatorInMemory = null;
 });
+
 pmEL.addEventListener('click', () => {
-    const currentdisplayNum = getdisplayAsNum();
-    const currentDisplayStr = getdisplayAsStr();
-    
-    if (currentDisplayStr === '-0') {
-        setStrAsdisplay('0');
-        return;
-    }
+    const currentDisplayStr = getDisplayAsStr();
+    if (currentDisplayStr === '0') return;
 
-    if (currentdisplayNum >= 0) {
-        setStrAsdisplay('-' + currentDisplayStr);
+    if (currentDisplayStr.startsWith('-')) {
+        setStrAsDisplay(currentDisplayStr.slice(1));
     } else {
-        setStrAsdisplay(currentDisplayStr.substring(1));
+        setStrAsDisplay('-' + currentDisplayStr);
     }
 });
+
 percentEL.addEventListener('click', () => {
-    const currentdisplayNum = getdisplayAsNum();
-    const newdisplayNum = currentdisplayNum / 100;
-    setStrAsdisplay(newdisplayNum.toString());
-    displyStrInMemory = null;
+    const currentDisplayNum = getDisplayAsNum();
+    const newDisplayNum = currentDisplayNum / 100;
+    setStrAsDisplay(newDisplayNum.toString());
+    displayStrInMemory = null;
     operatorInMemory = null;
 });
 
-// add event listeners to operators
-additionEL.addEventListener('click', () => {
-      handleNumberClick('addition');
-});
-subtractionEL.addEventListener('click', () => {
-    handleNumberClick('subtraction');
-});
-multiplicationEL.addEventListener('click', () => {
-    handleNumberClick('multiplication');
-});
-divisionEL.addEventListener('click', () => {
-    handleNumberClick('division');
-});
+additionEL.addEventListener('click', () => handleOperatorClick('addition'));
+subtractionEL.addEventListener('click', () => handleOperatorClick('subtraction'));
+multiplicationEL.addEventListener('click', () => handleOperatorClick('multiplication'));
+divisionEL.addEventListener('click', () => handleOperatorClick('division'));
+
 equalEL.addEventListener('click', () => {
-    if (displyStrInMemory) {
+    if (displayStrInMemory && operatorInMemory) {
+        const resultStr = getResultOfOperationAsStr();
+        setStrAsDisplay(resultStr);
+        displayStrInMemory = null;
+        operatorInMemory = null;
     }
 });
 
-
-
-//Add Event Listeners to numbers and decimal
-for(let a = 0; a < numberELArray.length; a++) {
-    const numberEL = numberELArray[a];
-    numberEL.addEventListener('click', () => {
-        handleNumberClick(a.toString());
+numberELArray.forEach((el, i) => {
+    el.addEventListener('click', () => {
+        handleNumberClick(i.toString());
     });
-}
+});
+
 decimalEL.addEventListener('click', () => {
-    const currentDisplayStr =  getdisplayAsStr();
+    const currentDisplayStr = getDisplayAsStr();
     if (!currentDisplayStr.includes('.')) {
-        setStrAsdisplay(currentDisplayStr + '.');
+        setStrAsDisplay(currentDisplayStr + '.');
     }
 });
 
-
-
-
-// set up the time
+// Time Display
 const updateTime = () => {
     const currentTime = new Date();
-
     const currentHour = currentTime.getHours();
     const currentMinute = currentTime.getMinutes();
-    
     hourEL.textContent = currentHour.toString();
     minuteEL.textContent = currentMinute.toString().padStart(2, '0');
-}
+};
+
 setInterval(updateTime, 1000);
 updateTime();
